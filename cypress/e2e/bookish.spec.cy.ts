@@ -3,6 +3,24 @@ import axios from "axios"
 
 describe('Bookish Application', () => {
 
+  const gotoApp = () => {
+    cy.visit("http://localhost:3000/")
+  }
+
+  const checkBookListWith = (expections: string[]) => {
+    cy.get("div[data-test='book-list']").should("exist")
+    cy.get("div.book-item").should((books) => {
+      expect(books).to.have.length(expections.length);
+
+      const titles = [...books].map(item => item.querySelector("h2")?.innerHTML)
+
+      expect(titles).to.deep.equal(expections);
+
+    });
+
+
+  }
+
   before(() => {
     return axios.delete("http://localhost:8080/books?_cleanup=true").catch((e) => e)
   })
@@ -38,31 +56,44 @@ describe('Bookish Application', () => {
   })
 
   it('Visit the bookish', () => {
-    cy.visit('http://localhost:3000/')
+    gotoApp()
     cy.get("h2[data-test='heading']").contains("Bookish")
   })
 
   it("Shows a book list", () => {
-    cy.visit("http://localhost:3000/")
-    cy.get("div[data-test='book-list']").should("exist")
-    cy.get("div.book-item").should((books) => {
-      expect(books).to.have.length(3);
 
-      const titles = [...books].map(book => book.querySelector("h2")?.innerHTML)
-
-      expect(titles).to.deep.equal(["Refactoring", "Domain-driven design", "Building Microservices"])
-
-    })
+    gotoApp()
+    checkBookListWith([
+      "Refactoring",
+      "Domain-driven design",
+      "Building Microservices"
+    ])
 
   })
 
   it("Goes to the detail page", () => {
-    cy.visit("http://localhost:3000/")
+    gotoApp()
     cy.get("div.book-item").contains("View Details").eq(0).click();
     cy.url().should('include', "/book/1")
 
     cy.get("h2.book-title").contains("Refactoring")
 
+  })
+
+  it("Searches for title", () => {
+    gotoApp()
+
+    checkBookListWith([
+      "Refactoring",
+      "Domain-driven design",
+      "Building Microservices"
+    ])
+
+    cy.get("[data-test='search'] input").type("design");
+
+    checkBookListWith([
+      "Domain-driven design"
+    ])
   })
 
 

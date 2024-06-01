@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useParams } from "react-router"
 
 export const useBooks = () => {
+    const [term, setTerm] = useState('')
+
     const [books, setBooks] = useState<Book[]>([])
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
@@ -14,7 +16,7 @@ export const useBooks = () => {
             setError(false);
 
             try {
-                const response = await axios.get("http://localhost:8080/books")
+                const response = await axios.get(`http://localhost:8080/books?q=${term}&_sort=id`)
                 setBooks(response.data);
 
             } catch (e) {
@@ -25,12 +27,14 @@ export const useBooks = () => {
         }
         fetchBooks()
 
-    }, [])
+    }, [term])
 
     return {
         loading,
         error,
-        books
+        books,
+        term,
+        setTerm
     }
 
 }
