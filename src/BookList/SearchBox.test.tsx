@@ -1,34 +1,53 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import userEvent from '@testing-library/user-event'
-import SearchBox, { SearchBoxProps } from "./SearchBox"
+import SearchBox from "./SearchBox"
+import { configureStore } from "@reduxjs/toolkit"
+import bookListReducer from "../store/bookListSlice"
+import { Provider } from "react-redux";
+
+const createMockStore = () => {
+    return configureStore({
+        reducer: {
+            list: bookListReducer,
+        }
+    });
+}
 
 describe("SearchBox", () => {
 
     it("renders input", () => {
-        const props: SearchBoxProps = {
-            term: "",
-            onSearch: jest.fn()
-        }
-        render(<SearchBox {...props} />)
+
+
+        const mockStore = createMockStore()
+
+        render(
+            <Provider store={mockStore}>
+                <SearchBox />
+            </Provider>
+        )
 
         const input = screen.getByRole("textbox")
         userEvent.type(input, "domain")
 
-        expect(props.onSearch).toHaveBeenCalled()
+        const state = mockStore.getState();
+
+        expect(state.list.term).toEqual("domain")
     })
 
     it("trim empty strings", () => {
-        const props: SearchBoxProps = {
-            term: "",
-            onSearch: jest.fn()
-        }
+        const mockStore = createMockStore()
 
-        render(<SearchBox {...props} />)
+        render(
+            <Provider store={mockStore}>
+                <SearchBox />
+            </Provider>
+        )
 
         const input = screen.getByRole("textbox")
         userEvent.type(input, '   ');
 
-        expect(props.onSearch).not.toHaveBeenCalled()
+        const state = mockStore.getState();
+        expect(state.list.term).toEqual("")
     })
 
 })

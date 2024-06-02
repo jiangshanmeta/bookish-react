@@ -1,15 +1,15 @@
 import TextField from "@mui/material/TextField"
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store";
+import { fetchBooks, setTerm } from "../store/bookListSlice";
 
-export interface SearchBoxProps {
-    term: string;
-    onSearch: (term: string) => void;
-}
 
-const SearchBox = ({ term, onSearch }: SearchBoxProps) => {
+
+const SearchBox = () => {
+    const dispatch = useDispatch<AppDispatch>();
     return (
         <TextField
             label="Search"
-            value={term}
             data-test="search"
             onChange={(e) => {
                 const value = e.target.value;
@@ -17,7 +17,8 @@ const SearchBox = ({ term, onSearch }: SearchBoxProps) => {
                     return;
                 }
 
-                onSearch(value)
+                dispatch(setTerm(value));
+                dispatch(fetchBooks(value));
             }}
             margin="normal"
             variant="outlined"
