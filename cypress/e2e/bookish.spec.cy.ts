@@ -17,8 +17,11 @@ describe('Bookish Application', () => {
       expect(titles).to.deep.equal(expections);
 
     });
+  }
 
-
+  const gotoNthBookInTheList = (index: number) => {
+    gotoApp()
+    cy.get("div.book-item").contains("View Details").eq(index).click();
   }
 
   before(() => {
@@ -26,7 +29,9 @@ describe('Bookish Application', () => {
   })
 
   afterEach(() => {
-    return axios.delete("http://localhost:8080/books?_cleanup=true").catch(e => e);
+    axios.delete("http://localhost:8080/books?_cleanup=true").catch(e => e);
+
+    cy.request("DELETE", "http://localhost:8080/books/1/reviews")
   })
 
   beforeEach(() => {
@@ -72,8 +77,9 @@ describe('Bookish Application', () => {
   })
 
   it("Goes to the detail page", () => {
-    gotoApp()
-    cy.get("div.book-item").contains("View Details").eq(0).click();
+
+
+    gotoNthBookInTheList(0)
     cy.url().should('include', "/book/1")
 
     cy.get("h2.book-title").contains("Refactoring")
@@ -95,6 +101,26 @@ describe('Bookish Application', () => {
       "Domain-driven design"
     ])
   })
+
+  const composeReview = (name: string, content: string) => {
+    cy.get("input[name='name']").type(name)
+    cy.get("input[name='content']").type(content)
+    cy.get("button[name='submit']").click()
+  }
+
+  const checkReview = () => {
+    cy.get("[data-testid='review']").should("have.length", 1);
+  }
+
+
+  it("Write a review for a book", () => {
+    gotoNthBookInTheList(0)
+
+    composeReview("Juntao Qiu", "Excellent")
+
+
+    checkReview()
+  });
 
 
 
